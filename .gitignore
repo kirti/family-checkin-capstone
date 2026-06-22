@@ -1,0 +1,7 @@
+.env
+__pycache__/
+*.pyc
+venv/
+.DS_Store
+VIDEO_SCRIPT.md
+WRITEUP_DRAFT.md
