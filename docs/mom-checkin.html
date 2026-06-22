@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="auth-guard.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mom's Check-In</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, Arial, sans-serif;
+    background: #f7f5f0;
+    margin: 0;
+    padding: 24px 16px 60px;
+    color: #2c2c2a;
+  }
+  h1 {
+    font-size: 30px;
+    text-align: center;
+    margin: 8px 0 4px;
+  }
+  .question {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 36px 0 16px;
+  }
+  .choice-btn {
+    display: block;
+    width: 100%;
+    padding: 22px;
+    margin-bottom: 14px;
+    font-size: 24px;
+    font-weight: 500;
+    border: 3px solid #d3d1c7;
+    border-radius: 16px;
+    background: white;
+    color: #2c2c2a;
+  }
+  .choice-btn.selected {
+    border-color: #1d9e75;
+    background: #e1f5ee;
+    color: #04342c;
+  }
+  input[type="number"], textarea {
+    width: 100%;
+    font-size: 28px;
+    padding: 18px;
+    border: 3px solid #d3d1c7;
+    border-radius: 16px;
+    font-family: inherit;
+  }
+  textarea {
+    font-size: 22px;
+    min-height: 100px;
+  }
+  .hint {
+    font-size: 18px;
+    color: #5f5e5a;
+    margin-top: 8px;
+  }
+  #submitBtn {
+    display: block;
+    width: 100%;
+    padding: 26px;
+    margin-top: 48px;
+    font-size: 28px;
+    font-weight: 600;
+    background: #1d9e75;
+    color: white;
+    border: none;
+    border-radius: 16px;
+  }
+  #submitBtn:disabled {
+    background: #b4b2a9;
+  }
+  #thankyou {
+    display: none;
+    text-align: center;
+    font-size: 26px;
+    padding: 60px 20px;
+  }
+</style>
+</head>
+<body>
+<header style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+  <a href="index.html" style="font-size:22px;text-decoration:none;color:#2c2c2a;">&larr;</a>
+  <span style="font-size:16px;font-weight:600;color:#5f5e5a;">Family Check-In</span>
+</header>
+
+<div id="form">
+  <h1>Hi Mom!</h1>
+  <p class="hint" style="text-align:center;">Today's check-in</p>
+
+  <div class="question">Did you take your medication today?</div>
+  <button class="choice-btn" data-group="medication" data-value="Yes, all of it">Yes, all of it</button>
+  <button class="choice-btn" data-group="medication" data-value="Missed one dose">Missed one dose</button>
+  <button class="choice-btn" data-group="medication" data-value="Missed it today">Missed it today</button>
+
+  <div class="question">What's your blood sugar number?</div>
+  <input type="number" id="bloodSugar" inputmode="numeric" placeholder="e.g. 120">
+
+  <div class="question">How are you feeling today?</div>
+  <button class="choice-btn" data-group="feeling" data-value="Good">Good</button>
+  <button class="choice-btn" data-group="feeling" data-value="Tired">Tired</button>
+  <button class="choice-btn" data-group="feeling" data-value="Not great">Not great</button>
+  <button class="choice-btn" data-group="feeling" data-value="Something else">Something else</button>
+
+  <div class="question">Anything else you want to say? (you can skip this)</div>
+  <textarea id="notes" placeholder="Type here, or leave blank"></textarea>
+
+  <button id="submitBtn" disabled>Submit</button>
+</div>
+
+<div id="thankyou">
+  Thank you! Your check-in was sent. 💙
+  <div style="margin-top: 30px;">
+    <a href="mom-history.html" style="font-size: 18px; color: #1d9e75;">View history</a>
+  </div>
+</div>
+
+<footer style="margin-top: 50px; text-align: center; font-size: 13px; color: #9c9a91;">
+  Built with &hearts; by Kirti Kaushal
+</footer>
+
+<script>
+  const PERSON = "Mom";
+  // Replace this with the real Apps Script Web App URL once deployed
+  const ENDPOINT_URL = "https://family-checkin-backend.onrender.com/api/checkin";
+
+  const selections = { medication: null, feeling: null };
+
+  document.querySelectorAll(".choice-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const group = btn.dataset.group;
+      document.querySelectorAll(`.choice-btn[data-group="${group}"]`)
+        .forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      selections[group] = btn.dataset.value;
+      checkReady();
+    });
+  });
+
+  function checkReady() {
+    const ready = selections.medication && selections.feeling;
+    document.getElementById("submitBtn").disabled = !ready;
+  }
+
+  document.getElementById("submitBtn").addEventListener("click", async () => {
+    const payload = {
+      person: PERSON,
+      medication_taken: selections.medication,
+      blood_sugar: document.getElementById("bloodSugar").value,
+      feeling: selections.feeling,
+      notes: document.getElementById("notes").value,
+      submitted_at: new Date().toISOString()
+    };
+
+    document.getElementById("submitBtn").disabled = true;
+    document.getElementById("submitBtn").textContent = "Sending...";
+
+    try {
+      const res = await fetch(ENDPOINT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeader() },
+        body: JSON.stringify(payload)
+      });
+      if (handleAuthError(res.status)) return;
+      if (!res.ok) {
+        throw new Error(`Server responded with ${res.status}`);
+      }
+      document.getElementById("form").style.display = "none";
+      document.getElementById("thankyou").style.display = "block";
+    } catch (err) {
+      alert("Something went wrong sending your check-in. Please try again.\n\n" + err.message);
+      document.getElementById("submitBtn").disabled = false;
+      document.getElementById("submitBtn").textContent = "Submit";
+    }
+  });
+</script>
+
+</body>
+</html>

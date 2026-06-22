@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="auth-guard.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mom's History</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, Arial, sans-serif;
+    background: #f7f5f0;
+    margin: 0;
+    padding: 24px 16px 60px;
+    color: #2c2c2a;
+  }
+  h1 { font-size: 26px; text-align: center; margin: 8px 0 20px; }
+  .toggle-row { display: flex; justify-content: center; gap: 8px; margin-bottom: 16px; }
+  .toggle-btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: 2px solid #d3d1c7;
+    border-radius: 12px;
+    background: white;
+    color: #2c2c2a;
+  }
+  .toggle-btn.active { border-color: #1d9e75; background: #e1f5ee; color: #04342c; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; font-size: 13px; color: #5f5e5a; margin-bottom: 12px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 4px; vertical-align: middle; }
+  #chartWrap { position: relative; width: 100%; max-width: 600px; height: 300px; margin: 0 auto; }
+  #status { text-align: center; font-size: 16px; color: #5f5e5a; margin-top: 30px; }
+  .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 600px; margin: 20px auto 0; }
+  .card { background: white; border-radius: 12px; padding: 12px; text-align: center; border: 1px solid #d3d1c7; }
+  .card .num { font-size: 22px; font-weight: 600; }
+  .card .label { font-size: 12px; color: #5f5e5a; }
+</style>
+</head>
+<body>
+
+<header style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+  <a href="index.html" style="font-size:22px;text-decoration:none;color:#2c2c2a;">&larr;</a>
+  <span style="font-size:16px;font-weight:600;color:#5f5e5a;">Family Check-In</span>
+</header>
+
+<h1>Mom's history</h1>
+
+<div class="toggle-row">
+  <button class="toggle-btn active" id="btnWeek">This week</button>
+  <button class="toggle-btn" id="btnMonth">This month</button>
+</div>
+
+<div class="legend">
+  <span><span class="dot" style="background:#639922;"></span>Good</span>
+  <span><span class="dot" style="background:#BA7517;"></span>Needs attention</span>
+  <span><span class="dot" style="background:#A32D2D;"></span>Emergency</span>
+</div>
+
+<div id="chartWrap">
+  <canvas id="chart" role="img" aria-label="Blood sugar history chart for Mom"></canvas>
+</div>
+
+<div id="status"></div>
+<div class="summary" id="summary"></div>
+
+<div id="detail" style="display:none; max-width:600px; margin:20px auto 0; background:white; border:1px solid #d3d1c7; border-radius:12px; padding:16px; font-size:14px; line-height:1.6;"></div>
+
+<p style="text-align:center; font-size:13px; color:#9c9a91; margin-top:12px;">Tap any point on the chart to see that day's details</p>
+
+<footer style="margin-top:40px; text-align:center; font-size:13px; color:#9c9a91;">
+  Built with &hearts; by Kirti Kaushal
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+  const PERSON = "Mom";
+  // Replace with the real Render backend URL once deployed
+  const API_BASE = "https://family-checkin-backend.onrender.com";
+
+  const TIER_COLOR = { good: '#639922', needs_attention: '#BA7517', emergency: '#A32D2D' };
+  const TIER_LABEL = { good: 'Good day', needs_attention: 'Needs attention', emergency: 'Emergency' };
+  let chart = null;
+  let currentEntries = [];
+
+  function formatDate(isoStr) {
+    const parts = (isoStr || "").split("-");
+    if (parts.length !== 3) return isoStr || "unknown date";
+    const [y, m, d] = parts;
+    return `${d}/${m}/${y}`;
+  }
+
+  function formatDateTime(isoTimestamp) {
+    if (!isoTimestamp) return "";
+    const dt = new Date(isoTimestamp);
+    if (isNaN(dt.getTime())) return isoTimestamp;
+    const dd = String(dt.getDate()).padStart(2, "0");
+    const mm = String(dt.getMonth() + 1).padStart(2, "0");
+    const hh = String(dt.getHours()).padStart(2, "0");
+    const min = String(dt.getMinutes()).padStart(2, "0");
+    return `${dd}/${mm} ${hh}:${min}`;
+  }
+
+  function formatDateTimeFull(isoTimestamp) {
+    if (!isoTimestamp) return "";
+    const dt = new Date(isoTimestamp);
+    if (isNaN(dt.getTime())) return isoTimestamp;
+    const dd = String(dt.getDate()).padStart(2, "0");
+    const mm = String(dt.getMonth() + 1).padStart(2, "0");
+    const yyyy = dt.getFullYear();
+    const hh = String(dt.getHours()).padStart(2, "0");
+    const min = String(dt.getMinutes()).padStart(2, "0");
+    return `${dd}/${mm}/${yyyy}, ${hh}:${min}`;
+  }
+
+  function showDetail(entry) {
+    const tierColor = TIER_COLOR[entry.tier] || '#888780';
+    const tierLabel = TIER_LABEL[entry.tier] || entry.tier;
+
+    // Only show fields that actually have real data - skip anything
+    // marked as not collected/not reported, rather than cluttering the
+    // view with placeholder text for fields this form never asks about.
+    const fields = [
+      ["Blood sugar", entry.blood_sugar],
+      ["Medication", entry.medication_taken],
+      ["Medication stock", entry.medication_stock],
+      ["Food today", entry.food_today],
+      ["Diet followed", entry.diet_followed],
+      ["Supplies", entry.supplies_status],
+      ["Next appointment", entry.next_appointment],
+      ["Notes", entry.notes],
+    ];
+    const isPlaceholder = (v) => !v || v.toLowerCase().includes("not collected") || v.toLowerCase().includes("not reported");
+    const rows = fields
+      .filter(([, value]) => !isPlaceholder(value))
+      .map(([label, value]) => `<div><b>${label}:</b> ${value}</div>`)
+      .join("");
+
+    document.getElementById("detail").style.display = "block";
+    document.getElementById("detail").innerHTML = `
+      <div style="font-weight:600; font-size:16px; margin-bottom:8px;">
+        ${formatDateTimeFull(entry.timestamp)}
+        <span style="float:right; color:${tierColor};">${tierLabel}</span>
+      </div>
+      ${rows || "<div>No additional details recorded for this day.</div>"}
+    `;
+  }
+
+  async function load(range) {
+    document.getElementById("status").textContent = "Loading...";
+    document.getElementById("chartWrap").style.display = "none";
+
+    try {
+      const res = await fetch(`${API_BASE}/api/history/${PERSON}?range=${range}`, {
+        headers: authHeader()
+      });
+      if (handleAuthError(res.status)) return;
+      const entries = await res.json();
+
+      if (!entries.length) {
+        document.getElementById("status").textContent = "No check-ins recorded yet.";
+        return;
+      }
+
+      document.getElementById("status").textContent = "";
+      document.getElementById("chartWrap").style.display = "block";
+      render(entries);
+    } catch (err) {
+      document.getElementById("status").textContent = "Couldn't load history right now.";
+    }
+  }
+
+  function render(entries) {
+    currentEntries = entries;
+    document.getElementById("detail").style.display = "none";
+
+    const labels = entries.map(e => formatDateTime(e.timestamp));
+    const values = entries.map(e => parseInt(e.blood_sugar) || 0);
+    const colors = entries.map(e => TIER_COLOR[e.tier] || '#888780');
+
+    const counts = { good: 0, needs_attention: 0, emergency: 0 };
+    entries.forEach(e => { counts[e.tier] = (counts[e.tier] || 0) + 1; });
+
+    document.getElementById("summary").innerHTML = `
+      <div class="card"><div class="num" style="color:#3B6D11;">${counts.good}</div><div class="label">Good days</div></div>
+      <div class="card"><div class="num" style="color:#854F0B;">${counts.needs_attention}</div><div class="label">Needs attention</div></div>
+      <div class="card"><div class="num" style="color:#791F1F;">${counts.emergency}</div><div class="label">Emergency</div></div>
+    `;
+
+    if (chart) chart.destroy();
+    chart = new Chart(document.getElementById("chart"), {
+      type: "line",
+      data: {
+        labels,
+        datasets: [{
+          label: "Blood sugar",
+          data: values,
+          borderColor: "#888780",
+          borderWidth: 1.5,
+          pointBackgroundColor: colors,
+          pointBorderColor: colors,
+          pointRadius: 6,
+          pointHoverRadius: 8,
+          tension: 0.2,
+          fill: false
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (item) => {
+                const e = currentEntries[item.dataIndex];
+                return `${item.parsed.y} mg/dL - ${TIER_LABEL[e.tier] || e.tier} (tap for details)`;
+              }
+            }
+          }
+        },
+        scales: { y: { min: 0, max: 350 } },
+        onClick: (evt, elements) => {
+          if (elements.length > 0) {
+            showDetail(currentEntries[elements[0].index]);
+          }
+        }
+      }
+    });
+  }
+
+  document.getElementById("btnWeek").onclick = () => {
+    document.getElementById("btnWeek").classList.add("active");
+    document.getElementById("btnMonth").classList.remove("active");
+    load("week");
+  };
+  document.getElementById("btnMonth").onclick = () => {
+    document.getElementById("btnMonth").classList.add("active");
+    document.getElementById("btnWeek").classList.remove("active");
+    load("month");
+  };
+
+  load("week");
+</script>
+
+</body>
+</html>

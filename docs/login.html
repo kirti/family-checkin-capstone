@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Family Check-In - Login</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, Arial, sans-serif;
+    background: linear-gradient(180deg, #fdf6ee 0%, #f7f5f0 220px, #f7f5f0 100%);
+    margin: 0;
+    padding: 60px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+  }
+  h1 { font-size: 26px; margin-bottom: 30px; }
+  input {
+    width: 100%;
+    max-width: 320px;
+    font-size: 18px;
+    padding: 14px;
+    margin-bottom: 14px;
+    border: 2px solid #e8dfd0;
+    border-radius: 12px;
+  }
+  button {
+    width: 100%;
+    max-width: 320px;
+    padding: 16px;
+    font-size: 18px;
+    font-weight: 600;
+    background: #1d9e75;
+    color: white;
+    border: none;
+    border-radius: 12px;
+  }
+  button:disabled { background: #b4b2a9; }
+  #error { color: #A32D2D; margin-top: 14px; max-width: 320px; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>💙 Family Check-In</h1>
+
+<form id="loginForm" style="display:flex; flex-direction:column; align-items:center; width:100%;">
+  <input type="text" id="username" placeholder="Username" autocomplete="username">
+  <input type="password" id="password" placeholder="Password" autocomplete="current-password">
+  <button type="submit" id="loginBtn">Log in</button>
+</form>
+<div id="error"></div>
+
+<footer style="margin-top:60px; text-align:center; font-size:13px; color:#b3a48d;">
+  Built with &hearts; by Kirti Kaushal
+</footer>
+
+<script>
+  // Same backend URL used everywhere else in the app.
+  const API_BASE = "https://family-checkin-backend.onrender.com";
+
+  document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+    const btn = document.getElementById("loginBtn");
+    const errorEl = document.getElementById("error");
+
+    btn.disabled = true;
+    btn.textContent = "Logging in...";
+    errorEl.textContent = "";
+
+    try {
+      const res = await fetch(`${API_BASE}/api/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Login failed");
+      }
+
+      localStorage.setItem("authToken", data.token);
+      window.location.href = "index.html";
+    } catch (err) {
+      errorEl.textContent = err.message;
+      btn.disabled = false;
+      btn.textContent = "Log in";
+    }
+  });
+</script>
+
+</body>
+</html>

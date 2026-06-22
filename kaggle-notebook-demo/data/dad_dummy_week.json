@@ -1,0 +1,86 @@
+[
+  {
+    "date": "2026-06-14",
+    "food_today": "eggs, sandwich, soup",
+    "blood_sugar": 215,
+    "medication_taken": "took morning dose, missed evening dose",
+    "medication_stock": "ok, about 2 weeks left",
+    "supplies_status": "ok",
+    "next_appointment": "2026-07-04",
+    "diet_followed": "followed diet well",
+    "notes": "felt a bit tired",
+    "tier": "needs_attention"
+  },
+  {
+    "date": "2026-06-15",
+    "food_today": "eggs, sandwich, soup",
+    "blood_sugar": 110,
+    "medication_taken": "took morning dose, took evening dose",
+    "medication_stock": "ok, about 2 weeks left",
+    "supplies_status": "ok",
+    "next_appointment": "2026-07-04",
+    "diet_followed": "followed diet well",
+    "notes": "felt fine, in good spirits",
+    "tier": "good"
+  },
+  {
+    "date": "2026-06-16",
+    "food_today": "eggs, sandwich, soup",
+    "blood_sugar": 133,
+    "medication_taken": "took morning dose, took evening dose",
+    "medication_stock": "ok, about 2 weeks left",
+    "supplies_status": "ok",
+    "next_appointment": "2026-06-19",
+    "diet_followed": "followed diet well",
+    "notes": "felt fine, in good spirits",
+    "tier": "good"
+  },
+  {
+    "date": "2026-06-17",
+    "food_today": "oatmeal, salad, grilled chicken",
+    "blood_sugar": 132,
+    "medication_taken": "took morning dose, took evening dose",
+    "medication_stock": "ok, about 2 weeks left",
+    "supplies_status": "ok",
+    "next_appointment": "2026-06-28",
+    "diet_followed": "followed diet well",
+    "notes": "felt fine, in good spirits",
+    "tier": "good"
+  },
+  {
+    "date": "2026-06-18",
+    "food_today": "eggs, sandwich, soup",
+    "blood_sugar": 115,
+    "medication_taken": "took morning dose, took evening dose",
+    "medication_stock": "ok, about 2 weeks left",
+    "supplies_status": "ok",
+    "next_appointment": "2026-07-01",
+    "diet_followed": "followed diet well",
+    "notes": "felt fine, in good spirits",
+    "tier": "good"
+  },
+  {
+    "date": "2026-06-19",
+    "food_today": "toast, rice and dal, light dinner",
+    "blood_sugar": 114,
+    "medication_taken": "took morning dose, took evening dose",
+    "medication_stock": "ok, about 2 weeks left",
+    "supplies_status": "ok",
+    "next_appointment": "2026-06-22",
+    "diet_followed": "followed diet well",
+    "notes": "felt fine, in good spirits",
+    "tier": "good"
+  },
+  {
+    "date": "2026-06-20",
+    "food_today": "oatmeal, salad, grilled chicken",
+    "blood_sugar": 134,
+    "medication_taken": "took morning dose, took evening dose",
+    "medication_stock": "ok, about 2 weeks left",
+    "supplies_status": "ok",
+    "next_appointment": "2026-06-23",
+    "diet_followed": "said fine, but mentioned a sweet treat later",
+    "notes": "felt fine, in good spirits",
+    "tier": "good"
+  }
+]

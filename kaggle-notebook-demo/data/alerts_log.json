@@ -1,0 +1,12 @@
+[
+  {
+    "person": "Mom",
+    "message": "Mom missed her evening medication two days in a row (2026-06-18 and 2026-06-19), and her medication stock is low. Blood sugar also rose from 145 to 160 over the same period.",
+    "recipients": [
+      "me",
+      "sister"
+    ],
+    "reason": "missed medication + rising blood sugar",
+    "sent_at": "2026-06-20"
+  }
+]

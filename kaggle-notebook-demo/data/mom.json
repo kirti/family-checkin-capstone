@@ -1,0 +1,24 @@
+[
+  {
+    "date": "2026-06-18",
+    "food_today": "oatmeal for breakfast, chicken salad for lunch",
+    "blood_sugar": "145",
+    "medication_taken": "took morning dose, missed evening dose",
+    "medication_stock": "low, about 3 days left",
+    "supplies_status": "ok",
+    "next_appointment": "2026-06-25",
+    "diet_followed": "said it was fine, but mentioned having cake later",
+    "notes": "Sounded a little tired today but in good spirits overall."
+  },
+  {
+    "date": "2026-06-19",
+    "food_today": "toast and eggs, then had some cookies in the afternoon",
+    "blood_sugar": "160",
+    "medication_taken": "missed evening dose again",
+    "medication_stock": "still low, needs refill soon",
+    "supplies_status": "ok",
+    "next_appointment": "2026-06-25",
+    "diet_followed": "said she's been good, then mentioned the cookies",
+    "notes": "A bit more tired than usual, but cheerful on the phone."
+  }
+]

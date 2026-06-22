@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Family Check-In</title>
+  <script src="auth-guard.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, Arial, sans-serif;
+      background: linear-gradient(180deg, #fdf6ee 0%, #f7f5f0 220px, #f7f5f0 100%);
+      margin: 0;
+      padding: 0 20px 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .hero {
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      padding: 48px 0 20px;
+    }
+    h1 {
+      font-size: 30px;
+      color: #2c2c2a;
+      margin: 0 0 8px;
+    }
+    p {
+      font-size: 18px;
+      color: #8a7a68;
+      margin: 0 0 32px;
+    }
+    .button {
+      display: block;
+      width: 100%;
+      max-width: 360px;
+      padding: 28px;
+      margin-bottom: 20px;
+      background: white;
+      border: 2px solid #e8dfd0;
+      border-radius: 18px;
+      text-align: center;
+      text-decoration: none;
+      color: #2c2c2a;
+      font-size: 26px;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(180, 140, 90, 0.12);
+      transition: transform 0.1s;
+    }
+    .button:active {
+      background: #fdf6ee;
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <h1>💙 Family Check-In</h1>
+    <p>Tap your name to fill in today's check-in</p>
+
+    <a class="button" href="mom-checkin.html">Mom</a>
+    <a class="button" href="dad-checkin.html">Dad</a>
+
+    <div style="margin-top: 24px; display: flex; gap: 24px; justify-content: center;">
+      <a href="mom-history.html" style="color: #a08b6f; font-size: 16px;">View Mom's history</a>
+      <a href="dad-history.html" style="color: #a08b6f; font-size: 16px;">View Dad's history</a>
+    </div>
+
+    <div style="margin-top: 16px;">
+      <a href="#" onclick="logout(); return false;" style="color: #c4a98f; font-size: 14px;">Log out</a>
+    </div>
+  </div>
+
+  <footer style="margin-top: 60px; text-align: center; font-size: 13px; color: #b3a48d;">
+    Built with &hearts; by Kirti Kaushal
+  </footer>
+</body>
+</html>
